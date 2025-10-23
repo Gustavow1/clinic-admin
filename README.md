@@ -125,6 +125,9 @@ A autenticação é feita através de uma palavra chave, presente na variável d
 ### Validadores de input
 Para validar os inputs recebidos pela API, utilizei o `class-validator` e criei funções de validação utilizando regex para verificar campos como email, número de telefone, documento, CEP.
 
+### Limitadores
+Apliquei um limite de requisições para a rota patients de 10 requisições por minuto para funções gerais e 2 requisições de criação por minuto.
+
 ### Middlewares
 Dois middlewares foram implementados:
 - Middleware de autenticação
@@ -174,3 +177,4 @@ Prints para uma melhor visualização:
 ![image](https://github.com/Gustavow1/clinic/blob/main/assets/logs.png)
 
 ![image](https://github.com/Gustavow1/clinic/blob/main/assets/extended-log-info.png)
+
