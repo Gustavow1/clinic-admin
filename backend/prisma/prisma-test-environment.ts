@@ -27,7 +27,7 @@ export default class PrismaTestEnvironment extends NodeEnvironment {
     const dbUser = process.env.POSTGRES_USER;
     const dbPass = process.env.POSTGRES_PASSWORD
     const dbHost = process.env.POSTGRES_HOST;
-    const dbPort = process.env.POSTGRES_PORT;
+    const dbPort = process.env.POSTGRES_LOCAL_PORT;
     const dbName = process.env.POSTGRES_DB;
 
     this.schema = `test_${randomUUID()}`;
