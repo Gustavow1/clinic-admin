@@ -16,27 +16,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 3
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    env_file: frontend/.env.production
-    ports:
-      - 3000:3000
-    depends_on:
-      - backend
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    env_file: backend/.env.production
-    ports:
-      - 5000:5000
-    depends_on:
-      db:
-        condition: service_healthy
   rabbitmq:
     image: rabbitmq:4-management
     env_file: ./.env

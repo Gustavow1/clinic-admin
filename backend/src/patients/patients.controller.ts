@@ -41,7 +41,7 @@ export class PatientsController {
 
   @Get("all")
   async all(@Res() res: Response) {
-    const cachedPatients = await redisClient.get("patients")
+    const cachedPatients = await redisClient.get("patients") ?? null
     if (!cachedPatients) {
       const patients = await this.patientRepository.getAll();
       redisClient.set("patients", JSON.stringify(patients ?? []));
