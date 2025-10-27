@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Edit, MoreHorizontal, Search, Trash } from "lucide-react"
 import Link from "next/link"
+import { deletePatient } from "@/app/api/patient/delete-patient"
 
 // Define types
 type Address = {
@@ -70,6 +71,10 @@ export function PatientList({ patients }: { patients: Patient[] }) {
     return patient.phoneNumbers.length > 0 ? patient.phoneNumbers[0].number : "-"
   }
 
+  const removePatient = async (patient: Patient) => {
+    await deletePatient(patient.id)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center">
@@ -125,8 +130,10 @@ export function PatientList({ patients }: { patients: Patient[] }) {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive">
-                          <Trash className="mr-2 h-4 w-4" />
-                          Excluir
+                          <button onClick={() => removePatient(patient)}>
+                            <Trash className="mr-2 h-4 w-4" />
+                            Excluir
+                          </button>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

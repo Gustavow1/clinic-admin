@@ -95,7 +95,7 @@ export class PrismaPatientRepository implements PatientRepository {
   async getAll(): Promise<Patient[]> {
     const patients = await this.prisma.patient.findMany({
       select: {
-        id: false,
+        id: true,
         firstName: true,
         lastName: true,
         dateOfBirth: true,
@@ -123,5 +123,35 @@ export class PrismaPatientRepository implements PatientRepository {
       },
     });
     return patients
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await Promise.all([
+        this.prisma.documentId.deleteMany({
+          where: {
+            patientId: id,
+          },
+        }),
+        this.prisma.address.deleteMany({
+          where: {
+            patientId: id,
+          },
+        }),
+        this.prisma.phoneNumber.deleteMany({
+          where: {
+            patientId: id,
+          },
+        }),
+      ]);
+
+      await this.prisma.patient.delete({
+        where: {
+          id
+        }
+      })
+    } catch(error) {
+      console.log(error)
+    }
   }
 }

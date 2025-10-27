@@ -27,13 +27,6 @@ export class InMemoryPatientRepository implements PatientRepository {
   }
 
   async getOne(data: GetPatientDto): Promise<GetPatientResponse> {
-    // const patient = this.patients.find(
-    //   (patient) =>
-    //     patient.firstName === data.firstName &&
-    //     patient.documentIds.find(
-    //       (document) => document.number === data.documentId.number,
-    //     ),
-    // );
     const patient = this.patients.find(
       (patient) =>
         patient.documentIds.find(
@@ -47,5 +40,9 @@ export class InMemoryPatientRepository implements PatientRepository {
 
   async getAll(): Promise<Patient[]> {
     return this.patients
+  }
+
+  async delete(id: string): Promise<void> {
+    return
   }
 }

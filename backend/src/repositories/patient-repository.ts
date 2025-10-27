@@ -7,4 +7,5 @@ export abstract class PatientRepository {
   abstract create(data: CreatePatientDto): Promise<Error | void>;
   abstract getOne(data: GetPatientDto): Promise<GetPatientResponse>
   abstract getAll(): Promise<Patient[]>;
+  abstract delete(id: string): Promise<void>
 }
