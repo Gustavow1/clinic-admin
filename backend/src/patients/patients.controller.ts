@@ -5,6 +5,7 @@ import {
   Body,
   Res,
   Delete,
+  Patch,
 } from "@nestjs/common";
 import { PatientRepository } from "../repositories/patient-repository";
 import { CreatePatientDto } from "./dto/create-patient.dto";
@@ -14,6 +15,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { redisClient } from "../services/redis/service";
 import { Throttle } from "@nestjs/throttler";
 import { DeletePatientDTO } from "./dto/delete-patient.dto";
+import { UpdatePatientDto } from "./dto/update-patient.dto";
 
 @ApiTags("Patient")
 @Controller("patient")
@@ -56,6 +58,13 @@ export class PatientsController {
   async delete(@Body() data: DeletePatientDTO, @Res() res: Response) {
     await this.patientRepository.delete(data.id)
     await redisClient.del("patients")
-    return res.status(200)
+    return res.status(200).json()
+  }
+
+  @Patch()
+  async update(@Body() data: UpdatePatientDto, @Res() res: Response) {
+    await this.patientRepository.update(data)
+    await redisClient.del("patients")
+    return res.status(200).json()
   }
 }

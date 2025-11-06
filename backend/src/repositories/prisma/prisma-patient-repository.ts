@@ -6,6 +6,7 @@ import { GetPatientDto } from "src/patients/dto/get-patient-data.dto";
 import { GetPatientResponse } from "src/patients/dto/get-patient-response.dto";
 import { PrismaService } from "src/database/prisma.service";
 import { right, left } from "src/errors/either";
+import { UpdatePatientDto } from "src/patients/dto/update-patient.dto";
 
 @Injectable()
 export class PrismaPatientRepository implements PatientRepository {
@@ -58,7 +59,7 @@ export class PrismaPatientRepository implements PatientRepository {
             }
           }
         }, select: {
-          id: false,
+          id: true,
           firstName: true,
           lastName: true,
           dateOfBirth: true,
@@ -151,6 +152,53 @@ export class PrismaPatientRepository implements PatientRepository {
         }
       })
     } catch(error) {
+      console.log(error)
+    }
+  }
+
+  async update(data: UpdatePatientDto): Promise<void> {
+    try {
+      const patient = await this.prisma.patient.findFirstOrThrow({
+        where: {
+          id: data.id
+        },
+      })
+
+      if (data.changedAreas.addresses) {
+        await this.prisma.address.updateMany({
+          where: {
+            patientId: patient.id
+          },
+          data: data.addresses
+        })
+      }
+      
+      if (data.changedAreas.documentIds) {
+        await this.prisma.documentId.updateMany({
+          where: {
+            patientId: data.id
+          }, data: data.documentIds
+        })
+      }
+
+      if (data.changedAreas.phoneNumbers) {
+        await this.prisma.phoneNumber.updateMany({
+          where: {
+            patientId: data.id
+          }, data: data.phoneNumbers
+        })
+      }
+
+      if (data.changedAreas.email) {
+        await this.prisma.patient.update({
+          where: {
+            id: patient.id,
+          }, data: {
+            email: data.email
+          }
+        })
+      }
+    } catch (error) {
       console.log(error)
     }
   }

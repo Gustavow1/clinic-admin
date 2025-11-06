@@ -5,19 +5,11 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { PlusCircle } from "lucide-react"
 import { Patient } from "../types/Patient"
+import { getPatients } from "../api/patient/get-patients"
 
 export const metadata: Metadata = {
   title: "Dashboard | Clinic Admin",
   description: "Clinic patient management dashboard",
-}
-
-const getPatients = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patient/all`)
-  const patients = await res.json()
-
-  if (!Array.isArray(patients)) return []
-  
-  return patients
 }
 
 export const dynamic =  "force-dynamic"

@@ -36,7 +36,7 @@ import { APP_GUARD } from "@nestjs/core";
     RabbitMQProvider,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard
+      useClass: ThrottlerGuard,
     },
   ],
 })

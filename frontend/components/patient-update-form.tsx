@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusCircle, Trash2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createPatient } from "@/app/api/patient/create-patient"
+import { updatePatient } from "@/app/api/patient/update-patient"
 
 // Define types
 type Address = {
@@ -30,7 +30,7 @@ type PhoneNumber = {
 }
 
 type Patient = {
-  id?: string
+  id: string
   firstName: string
   lastName: string
   dateOfBirth: string | Date
@@ -40,18 +40,33 @@ type Patient = {
   phoneNumbers: PhoneNumber[]
 }
 
-export function PatientForm() {
+type changedAreas = {
+  email: boolean,
+  addresses: boolean,
+  documentIds: boolean,
+  phoneNumbers: boolean
+}
+
+export function PatientUpdateForm({ patient }: { patient: Patient }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const [changedAreas, setChangedAreas] = useState<changedAreas>({
+    email: false,
+    addresses: false,
+    documentIds: false,
+    phoneNumbers: false
+  })
+
   // Set form state
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    dateOfBirth:"",
-    addresses: [
+    id: patient.id,
+    firstName: patient.firstName,
+    lastName: patient.lastName,
+    email: patient?.email || "",
+    dateOfBirth: new Date(patient.dateOfBirth),
+    addresses: patient?.addresses || [
       {
         street: "",
         city: "",
@@ -59,13 +74,13 @@ export function PatientForm() {
         zipCode: "",
       },
     ],
-    documentIds: [
+    documentIds: patient?.documentIds || [
       {
         number: "",
         type: "cpf" as const,
       },
     ],
-    phoneNumbers: [
+    phoneNumbers: patient?.phoneNumbers || [
       {
         number: "",
         type: "Celular",
@@ -87,6 +102,23 @@ export function PatientForm() {
     }
   }
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        return newErrors
+      })
+    }
+
+    if (!changedAreas.email) {
+      setChangedAreas((prev) => ({...prev, email: true}))
+    }
+  }
+
   // Handle address changes
   const handleAddressChange = (index: number, field: keyof Address, value: string) => {
     setFormData((prev) => ({
@@ -103,6 +135,9 @@ export function PatientForm() {
         return newErrors
       })
     }
+    if (!changedAreas.addresses) {
+      setChangedAreas((prev) => ({...prev, adresses: true}))
+    }
   }
 
   const addAddress = () => {
@@ -118,6 +153,9 @@ export function PatientForm() {
         },
       ],
     }))
+    if (!changedAreas.addresses) {
+      setChangedAreas((prev) => ({...prev, adresses: true}))
+    }
   }
 
   const removeAddress = (index: number) => {
@@ -129,6 +167,9 @@ export function PatientForm() {
       ...prev,
       addresses: prev.addresses.filter((_, i) => i !== index),
     }))
+    if (!changedAreas.addresses) {
+      setChangedAreas((prev) => ({...prev, adresses: true}))
+    }
 
     // Clear any errors for this address
     setErrors((prev) => {
@@ -143,11 +184,15 @@ export function PatientForm() {
   }
 
   // Handle document changes
-  const handleDocumentChange = (index: number, field: keyof DocumentId, value: any) => {
+  const handleDocumentChange = (index: number, field: keyof DocumentId, value: any) => { 
     setFormData((prev) => ({
       ...prev,
       documentIds: prev.documentIds.map((doc, i) => (i === index ? { ...doc, [field]: value } : doc)),
     }))
+
+    if (!changedAreas.documentIds) {
+      setChangedAreas((prev) => ({...prev, documentIds: true}))
+    }
 
     // Clear error when field is edited
     const errorKey = `documentIds.${index}.${field}`
@@ -171,6 +216,9 @@ export function PatientForm() {
         },
       ],
     }))
+    if (!changedAreas.documentIds) {
+      setChangedAreas((prev) => ({...prev, documentIds: true}))
+    }
   }
 
   const removeDocument = (index: number) => {
@@ -193,6 +241,9 @@ export function PatientForm() {
       })
       return newErrors
     })
+    if (!changedAreas.documentIds) {
+      setChangedAreas((prev) => ({...prev, documentIds: true}))
+    }
   }
 
   // Handle phone changes
@@ -211,6 +262,9 @@ export function PatientForm() {
         return newErrors
       })
     }
+    if(!changedAreas.phoneNumbers) {
+      setChangedAreas((prev) => ({...prev, phoneNumbers: true}))
+    }
   }
 
   const addPhone = () => {
@@ -224,6 +278,9 @@ export function PatientForm() {
         },
       ],
     }))
+    if(!changedAreas.phoneNumbers) {
+      setChangedAreas((prev) => ({...prev, phoneNumbers: true}))
+    }
   }
 
   const removePhone = (index: number) => {
@@ -246,6 +303,9 @@ export function PatientForm() {
       })
       return newErrors
     })
+    if(!changedAreas.phoneNumbers) {
+      setChangedAreas((prev) => ({...prev, phoneNumbers: true}))
+    }
   }
 
   const validateForm = () => {
@@ -322,7 +382,7 @@ export function PatientForm() {
 
     setIsLoading(true)
 
-    createPatient(formData).then(() => {
+    updatePatient(formData, changedAreas).then(() => {
       setIsLoading(false)
       router.push("/dashboard")
     })
@@ -352,8 +412,8 @@ export function PatientForm() {
                   id="firstName"
                   name="firstName"
                   placeholder="Nome"
-                  value={formData.firstName}
-                  onChange={handleChange}
+                  readOnly
+                  defaultValue={formData.firstName}
                   className={errors.firstName ? "border-red-500" : ""}
                 />
                 {errors.firstName && <p className="text-sm text-red-500 mt-1">{errors.firstName}</p>}
@@ -370,8 +430,8 @@ export function PatientForm() {
                   id="lastName"
                   name="lastName"
                   placeholder="Sobrenome"
-                  value={formData.lastName}
-                  onChange={handleChange}
+                  readOnly
+                  defaultValue={formData.lastName}
                   className={errors.lastName ? "border-red-500" : ""}
                 />
                 {errors.lastName && <p className="text-sm text-red-500 mt-1">{errors.lastName}</p>}
@@ -389,9 +449,8 @@ export function PatientForm() {
                 <Input
                   id="dateOfBirth"
                   name="dateOfBirth"
-                  type="date"
-                  value={String(formData.dateOfBirth)}
-                  onChange={handleChange}
+                  readOnly
+                  defaultValue={`${formData.dateOfBirth.getDate()}/${formData.dateOfBirth.getMonth()}/${formData.dateOfBirth.getFullYear()}`}
                   className={errors.dateOfBirth ? "border-red-500" : ""}
                 />
                 {errors.dateOfBirth && <p className="text-sm text-red-500 mt-1">{errors.dateOfBirth}</p>}
@@ -409,7 +468,7 @@ export function PatientForm() {
                   name="email"
                   placeholder="email@exemplo.com"
                   value={formData.email}
-                  onChange={handleChange}
+                  onChange={handleEmailChange}
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}

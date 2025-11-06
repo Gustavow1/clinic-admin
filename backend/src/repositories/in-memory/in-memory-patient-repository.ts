@@ -5,6 +5,7 @@ import { GetPatientResponse } from "src/patients/dto/get-patient-response.dto";
 import { Patient } from "src/patients/entities/patient.entity";
 import { right, left } from "src/errors/either";
 import { randomUUID } from "node:crypto";
+import { UpdatePatientDto } from "src/patients/dto/update-patient.dto";
 
 export class InMemoryPatientRepository implements PatientRepository {
   public patients: Patient[] = []
@@ -43,6 +44,9 @@ export class InMemoryPatientRepository implements PatientRepository {
   }
 
   async delete(id: string): Promise<void> {
+    return
+  }
+  async update(data: UpdatePatientDto): Promise<void> {
     return
   }
 }

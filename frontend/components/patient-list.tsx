@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Edit, MoreHorizontal, Search, Trash } from "lucide-react"
 import Link from "next/link"
 import { deletePatient } from "@/app/api/patient/delete-patient"
+import { useRouter } from "next/navigation"
 
 // Define types
 type Address = {
@@ -39,6 +40,7 @@ type Patient = {
 }
 
 export function PatientList({ patients }: { patients: Patient[] }) {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
 
   const filteredPatients = patients.filter(
@@ -73,6 +75,7 @@ export function PatientList({ patients }: { patients: Patient[] }) {
 
   const removePatient = async (patient: Patient) => {
     await deletePatient(patient.id)
+    router.refresh()
   }
 
   return (
