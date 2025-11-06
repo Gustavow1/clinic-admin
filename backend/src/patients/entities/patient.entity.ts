@@ -3,7 +3,7 @@ import { IDocumentId } from "../dto/identification-document.dto";
 import { IPhoneNumber } from "../dto/phone-number.dto";
 
 export class Patient {
-  id?: string;
+  id: string;
   firstName: string;
   lastName: string;
   addresses: IAddress[];
