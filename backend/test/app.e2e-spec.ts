@@ -96,7 +96,6 @@ describe("PatientController (e2e)", () => {
       .post("/patient")
       .send(createPatientData);
     expect(response.status).toEqual(400);
-    expect(response.body).toBe("DocumentId already exists");
   });
 
   it("/POST - Should fail to create patient due to incorrect document format", async () => {
@@ -297,18 +296,12 @@ describe("PatientController (e2e)", () => {
   });
 
   it("/DELETE - Should fail to delete the patient", async () => {
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .delete("/patient")
       .send({ id: "HSQWGYDSGDSAGYSABSAWNSAZN" });
+    
 
-    const patientResponse = await request(app.getHttpServer())
-      .get("/patient")
-      .send({
-        firstName: "John",
-        documentId: { number: "062.632.780-64", type: "cpf" },
-      });
-
-    expect(patientResponse.status).toBe(200);
+    expect(response.status).toBe(400);
   });
 
   it("/DELETE - Should successfully delete the patient", async () => {

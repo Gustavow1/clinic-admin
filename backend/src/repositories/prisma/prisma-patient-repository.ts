@@ -7,12 +7,15 @@ import { GetPatientResponse } from "src/patients/dto/get-patient-response.dto";
 import { PrismaService } from "src/database/prisma.service";
 import { right, left } from "src/errors/either";
 import { UpdatePatientDto } from "src/patients/dto/update-patient.dto";
+import { DeletePatientResponse } from "src/patients/dto/delete-patient-response.dto";
+import { UpdatePatientResponse } from "src/patients/dto/update-patient-response.dto";
+import { CreatePatientResponse } from "src/patients/dto/create-patient-response.dto";
 
 @Injectable()
 export class PrismaPatientRepository implements PatientRepository {
   constructor(private prisma: PrismaService) {}
   
-  async create(data: CreatePatientDto): Promise<Error | void> {
+  async create(data: CreatePatientDto): Promise<CreatePatientResponse> {
     const {
       firstName,
       lastName,
@@ -41,9 +44,10 @@ export class PrismaPatientRepository implements PatientRepository {
           },
         },
       });
+      return right("Patient created")
     } catch (error) {
-      if (error.code == "P2002") throw new Error("DocumentId already exists");
-      throw new Error(error);
+      if (error.code == "P2002") return left(new Error("DocumentId already exists"));
+      return left(error);
     }
   }
 
@@ -126,7 +130,7 @@ export class PrismaPatientRepository implements PatientRepository {
     return patients
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<DeletePatientResponse> {
     try {
       await Promise.all([
         this.prisma.documentId.deleteMany({
@@ -151,12 +155,14 @@ export class PrismaPatientRepository implements PatientRepository {
           id
         }
       })
-    } catch(error) {
+      return right("Patient successfully deleted")
+    } catch (error) {
       console.log(error)
+      return left(error)
     }
   }
 
-  async update(data: UpdatePatientDto): Promise<void> {
+  async update(data: UpdatePatientDto): Promise<UpdatePatientResponse> {
     try {
       const patient = await this.prisma.patient.findFirstOrThrow({
         where: {
@@ -198,8 +204,10 @@ export class PrismaPatientRepository implements PatientRepository {
           }
         })
       }
+      return right("Patient updated")
     } catch (error) {
       console.log(error)
+      return left(error)
     }
   }
 }

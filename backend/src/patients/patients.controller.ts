@@ -27,13 +27,11 @@ export class PatientsController {
   @Throttle({default: {limit: 60000, ttl: 2}})
   @Post()
   async register(@Body() data: CreatePatientDto, @Res() res: Response) {
-    try {
-      await this.patientRepository.create(data);
-      res.status(201).json();
-      await redisClient.del("patients")
-    } catch (error) {
-      res.status(400).json(error.message)
-    }
+    const result = await this.patientRepository.create(data);
+    if (result.isLeft()) return res.status(400).json(result.value.message)
+    
+    await redisClient.del("patients");
+    return res.status(201).json();
   }
 
   @Get()
@@ -56,14 +54,18 @@ export class PatientsController {
 
   @Delete()
   async delete(@Body() data: DeletePatientDTO, @Res() res: Response) {
-    await this.patientRepository.delete(data.id)
+    const result = await this.patientRepository.delete(data.id)
+    if (result.isLeft()) return res.status(400).json();
+
     await redisClient.del("patients")
     return res.status(200).json()
   }
 
   @Patch()
   async update(@Body() data: UpdatePatientDto, @Res() res: Response) {
-    await this.patientRepository.update(data)
+    const result = await this.patientRepository.update(data)
+    if (result.isLeft()) return res.status(400).json()
+    
     await redisClient.del("patients")
     return res.status(200).json()
   }
