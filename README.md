@@ -46,6 +46,7 @@ Para o backend, utilizei NodeJs com NestJs e Prisma.
 A collection principal é a `Patients`, definida como no exemplo abaixo:
 ``` json
 {
+	"id": "89cecb6b-694d-4787-8ffc-bde04be070c6",
     "firstName": "John",
     "lastName": "Doe",
     "dateOfBirth": "1970-01-01T00:00:00.000Z",
@@ -126,7 +127,7 @@ A autenticação é feita através de uma palavra chave, presente na variável d
 Para validar os inputs recebidos pela API, utilizei o `class-validator` e criei funções de validação utilizando regex para verificar campos como email, número de telefone, documento, CEP.
 
 ### Limitadores
-Apliquei um limite de requisições para a rota patients de 10 requisições por minuto para funções gerais e 2 requisições de criação por minuto.
+Apliquei um limite de requisições para a rota patients de 50 requisições por minuto para funções gerais e 2 requisições de criação por minuto.
 
 ### Middlewares
 Dois middlewares foram implementados:
@@ -163,7 +164,7 @@ Para o frontend, optei por usar IA para criar um front base e modifiquei/adicion
 - Login de funcionários com nome de usuário e senhas fixas ("admin")
 - Dashboard, com listagem, criação, atualização e exclusão de pacientes
 - Modal para criação de um novo paciente
-- A tabela de logs para listagem dos registros
+- Tabela de logs para listagem dos registros
 
 Prints para uma melhor visualização:
 ![image](https://github.com/Gustavow1/clinic/blob/main/assets/login.png)
@@ -177,4 +178,5 @@ Prints para uma melhor visualização:
 ![image](https://github.com/Gustavow1/clinic/blob/main/assets/logs.png)
 
 ![image](https://github.com/Gustavow1/clinic/blob/main/assets/extended-log-info.png)
+
 
