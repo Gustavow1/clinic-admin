@@ -10,6 +10,8 @@ import { UpdatePatientDto } from "src/patients/dto/update-patient.dto";
 import { DeletePatientResponse } from "src/patients/dto/delete-patient-response.dto";
 import { UpdatePatientResponse } from "src/patients/dto/update-patient-response.dto";
 import { CreatePatientResponse } from "src/patients/dto/create-patient-response.dto";
+import { DocumentIdAlreadyExistsError } from "src/patients/errors/documentId-already-exists";
+import { PatientNotFoundError } from "src/patients/errors/patient-not-found";
 
 @Injectable()
 export class PrismaPatientRepository implements PatientRepository {
@@ -46,7 +48,7 @@ export class PrismaPatientRepository implements PatientRepository {
       });
       return right("Patient created")
     } catch (error) {
-      if (error.code == "P2002") return left(new Error("DocumentId already exists"));
+      if (error.code == "P2002") return left(new DocumentIdAlreadyExistsError(data.documentIds));
       return left(error);
     }
   }
@@ -92,7 +94,7 @@ export class PrismaPatientRepository implements PatientRepository {
       })
       return right(patient)
     } catch (error) {
-      if(error.code === "P2025") return left(new Error("Paciente não encontrado no sistema"))
+      if(error.code === "P2025") return left(new PatientNotFoundError(data.firstName))
       return left(error)
     }
   }
@@ -132,6 +134,12 @@ export class PrismaPatientRepository implements PatientRepository {
 
   async delete(id: string): Promise<DeletePatientResponse> {
     try {
+
+      await this.prisma.patient.findFirstOrThrow({
+        where: {
+        id
+      }})
+
       await Promise.all([
         this.prisma.documentId.deleteMany({
           where: {
@@ -157,7 +165,7 @@ export class PrismaPatientRepository implements PatientRepository {
       })
       return right("Patient successfully deleted")
     } catch (error) {
-      console.log(error)
+      if (error.code === "P2025") return left(new PatientNotFoundError(id));
       return left(error)
     }
   }
@@ -206,7 +214,7 @@ export class PrismaPatientRepository implements PatientRepository {
       }
       return right("Patient updated")
     } catch (error) {
-      console.log(error)
+      if (error.code === "P2025") return left(new PatientNotFoundError(data.firstName));
       return left(error)
     }
   }

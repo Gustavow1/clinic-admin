@@ -28,16 +28,32 @@ export class PatientsController {
   @Post()
   async register(@Body() data: CreatePatientDto, @Res() res: Response) {
     const result = await this.patientRepository.create(data);
-    if (result.isLeft()) return res.status(400).json(result.value.message)
-    
+
+    if (result.isLeft()) {
+      switch (result.value.name) {
+        case "DocumentIdAlreadyExistsError":
+          return res.status(409).send({ message: "DocumentId already exists" })
+        default:
+          return res.status(400).json(result.value.message);
+      }
+    }
+
     await redisClient.del("patients");
-    return res.status(201).json();
+    return res.status(201).send();
   }
 
   @Get()
   async get(@Body() data: GetPatientDto, @Res() res: Response) {
     const result = await this.patientRepository.getOne(data);
-    if (result.isLeft()) return res.status(400).json(result.value.message);
+
+    if (result.isLeft()) {
+      switch (result.value.name) {
+        case "PatientNotFoundError":
+          return res.status(409).send({ message: "Patient not found" });
+        default:
+          return res.status(400).json(result.value.message);
+      }
+    }
     res.json(result.value);
   }
 
@@ -55,18 +71,34 @@ export class PatientsController {
   @Delete()
   async delete(@Body() data: DeletePatientDTO, @Res() res: Response) {
     const result = await this.patientRepository.delete(data.id)
-    if (result.isLeft()) return res.status(400).json();
+
+    if (result.isLeft()) {
+      switch (result.value.name) {
+        case "PatientIdNotFoundError":
+          return res.status(409).send({ message: "Patient not found by id" });
+        default:
+          return res.status(400).json(result.value.message);
+      }
+    }
 
     await redisClient.del("patients")
-    return res.status(200).json()
+    return res.status(200).send()
   }
 
   @Patch()
   async update(@Body() data: UpdatePatientDto, @Res() res: Response) {
     const result = await this.patientRepository.update(data)
-    if (result.isLeft()) return res.status(400).json()
+
+    if (result.isLeft()) {
+      switch (result.value.name) {
+        case "PatientNotFoundError":
+          return res.status(409).send({ message: "Patient not found" });
+        default:
+          return res.status(400).json(result.value.message);
+      }
+    }
     
     await redisClient.del("patients")
-    return res.status(200).json()
+    return res.status(200).send()
   }
 }
