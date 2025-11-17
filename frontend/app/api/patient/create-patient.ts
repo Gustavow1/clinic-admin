@@ -1,34 +1,38 @@
+"use server";
 
+import { cookies } from "next/headers";
 
 type Address = {
-  street: string
-  city: string
-  state: string
-  zipCode: string
-}
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+};
 
 type DocumentId = {
-  number: string
-  type: "cpf" | "rg"
-}
+  number: string;
+  type: "cpf" | "rg";
+};
 
 type PhoneNumber = {
-  number: string
-  type: string
-}
+  number: string;
+  type: string;
+};
 
 type Patient = {
-  id?: string
-  firstName: string
-  lastName: string
-  dateOfBirth: string | Date
-  email?: string
-  addresses: Address[]
-  documentIds: DocumentId[]
-  phoneNumbers: PhoneNumber[]
-}
+  id?: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string | Date;
+  email?: string;
+  addresses: Address[];
+  documentIds: DocumentId[];
+  phoneNumbers: PhoneNumber[];
+};
 
 export async function createPatient(patient: Patient) {
+  const cookieStore = await cookies();
+
   const {
     firstName,
     lastName,
@@ -43,6 +47,7 @@ export async function createPatient(patient: Patient) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${cookieStore.get("token")?.value}`,
     },
     body: JSON.stringify({
       firstName,

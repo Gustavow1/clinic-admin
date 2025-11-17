@@ -1,4 +1,6 @@
-import { fi } from "date-fns/locale";
+"use server";
+
+import { cookies } from "next/headers";
 
 type Address = {
   street: string;
@@ -35,7 +37,12 @@ type ChangedAreas = {
   phoneNumbers: boolean;
 };
 
-export async function updatePatient(patient: Patient, changedAreas: ChangedAreas): Promise<void> {
+export async function updatePatient(
+  patient: Patient,
+  changedAreas: ChangedAreas
+): Promise<void> {
+  const cookieStore = await cookies();
+
   const {
     id,
     firstName,
@@ -51,6 +58,7 @@ export async function updatePatient(patient: Patient, changedAreas: ChangedAreas
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${cookieStore.get("token")?.value}`,
     },
     body: JSON.stringify({
       id,
@@ -61,7 +69,7 @@ export async function updatePatient(patient: Patient, changedAreas: ChangedAreas
       dateOfBirth,
       documentIds,
       phoneNumbers,
-      changedAreas
+      changedAreas,
     }),
   });
 }

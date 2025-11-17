@@ -13,6 +13,7 @@ import { RabbitMQModule } from "src/services/rabbitmq/rabbitmq.module";
 import { RabbitMQProvider } from "src/services/rabbitmq/rabbitmq.provider";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
+import { AuthMiddleware } from "src/middlewares/auth.middleware";
 
 @Module({
   controllers: [PatientsController],
@@ -44,7 +45,8 @@ export class PatientsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes({
       path: "/patient",
-      method: RequestMethod.POST,
+      method: RequestMethod.ALL,
     });
+    consumer.apply(AuthMiddleware).forRoutes(PatientsController)
   }
 }

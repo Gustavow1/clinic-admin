@@ -73,9 +73,10 @@ export function PatientList({ patients }: { patients: Patient[] }) {
     return patient.phoneNumbers.length > 0 ? patient.phoneNumbers[0].number : "-"
   }
 
-  const removePatient = async (patient: Patient) => {
-    await deletePatient(patient.id)
-    router.refresh()
+  const removePatient = (patient: Patient) => {
+    deletePatient(patient.id).then(() => {
+      router.refresh()
+    })
   }
 
   return (
