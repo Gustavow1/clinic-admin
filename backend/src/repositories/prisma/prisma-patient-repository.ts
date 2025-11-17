@@ -12,6 +12,7 @@ import { UpdatePatientResponse } from "src/patients/dto/update-patient-response.
 import { CreatePatientResponse } from "src/patients/dto/create-patient-response.dto";
 import { DocumentIdAlreadyExistsError } from "src/patients/errors/documentId-already-exists";
 import { PatientNotFoundError } from "src/patients/errors/patient-not-found";
+import { PatientIdNotFoundError } from "src/patients/errors/patient-id-not-found";
 
 @Injectable()
 export class PrismaPatientRepository implements PatientRepository {
@@ -165,7 +166,7 @@ export class PrismaPatientRepository implements PatientRepository {
       })
       return right("Patient successfully deleted")
     } catch (error) {
-      if (error.code === "P2025") return left(new PatientNotFoundError(id));
+      if (error.code === "P2025") return left(new PatientIdNotFoundError(id));
       return left(error)
     }
   }
