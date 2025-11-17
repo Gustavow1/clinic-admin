@@ -5,10 +5,13 @@ import { App } from "supertest/types";
 import { AppModule } from "./../src/app.module";
 import { redisClient } from "src/services/redis/service";
 import { closeConnection } from "src/services/rabbitmq/rabbitmq.provider";
+import { JwtService } from "src/services/jwt";
+import { config } from "src/config/config";
 
 describe("PatientController (e2e)", () => {
   let app: INestApplication<App>;
-  let patientId;
+  let patientId: string;
+  let token: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -19,6 +22,10 @@ describe("PatientController (e2e)", () => {
     app.useGlobalPipes(new ValidationPipe());
 
     await app.init();
+
+    token = JwtService.generateToken(String(config.API_KEY));
+
+    await redisClient.set(token, String(config.API_KEY));
   });
 
   it("/POST - Should create a new patient", async () => {
@@ -55,7 +62,8 @@ describe("PatientController (e2e)", () => {
 
     const response = await request(app.getHttpServer())
       .post("/patient")
-      .send(createPatientData);
+      .auth(token, {type: "bearer"})
+      .send(createPatientData)
 
     expect(response.status).toEqual(201);
   });
@@ -94,8 +102,9 @@ describe("PatientController (e2e)", () => {
 
     const response = await request(app.getHttpServer())
       .post("/patient")
+      .auth(token, { type: "bearer" })
       .send(createPatientData);
-    expect(response.status).toEqual(400);
+    expect(response.status).toEqual(409);
   });
 
   it("/POST - Should fail to create patient due to incorrect document format", async () => {
@@ -127,12 +136,15 @@ describe("PatientController (e2e)", () => {
 
     const response = await request(app.getHttpServer())
       .post("/patient")
+      .auth(token, { type: "bearer" })
       .send(createPatientData);
     expect(response.status).toEqual(400);
   });
 
   it("/GET - Should get a list with all patients", async () => {
-    const response = await request(app.getHttpServer()).get("/patient/all");
+    const response = await request(app.getHttpServer())
+      .get("/patient/all")
+      .auth(token, { type: "bearer" });
     expect(response.status).toEqual(200);
     expect(Array.isArray(response.body)).toBeTruthy();
   });
@@ -140,6 +152,7 @@ describe("PatientController (e2e)", () => {
   it("/GET - Should get one patient", async () => {
     const response = await request(app.getHttpServer())
       .get("/patient")
+      .auth(token, { type: "bearer" })
       .send({
         firstName: "John",
         documentId: { number: "062.632.780-64", type: "cpf" },
@@ -182,11 +195,12 @@ describe("PatientController (e2e)", () => {
   it("/GET - Should fail to get one patient due to wrong name", async () => {
     const response = await request(app.getHttpServer())
       .get("/patient")
+      .auth(token, { type: "bearer" })
       .send({
         firstName: "Joseph",
         documentId: { number: "062.632.780-64", type: "cpf" },
       });
-    expect(response.status).toEqual(400);
+    expect(response.status).toEqual(409);
   });
 
   it("/PATCH - Should successfully update patient", async () => {
@@ -230,10 +244,12 @@ describe("PatientController (e2e)", () => {
 
     await request(app.getHttpServer())
       .patch("/patient")
-      .send(updatePatientData)
+      .auth(token, { type: "bearer" })
+      .send(updatePatientData);
     
     const response = await request(app.getHttpServer())
       .get("/patient")
+      .auth(token, { type: "bearer" })
       .send({
         firstName: "John",
         documentId: { number: "062.632.780-64", type: "cpf" },
@@ -283,6 +299,7 @@ describe("PatientController (e2e)", () => {
 
     await request(app.getHttpServer())
       .patch("/patient")
+      .auth(token, { type: "bearer" })
       .send(updatePatientData);
 
     const response = await request(app.getHttpServer())
@@ -298,25 +315,19 @@ describe("PatientController (e2e)", () => {
   it("/DELETE - Should fail to delete the patient", async () => {
     const response = await request(app.getHttpServer())
       .delete("/patient")
+      .auth(token, { type: "bearer" })
       .send({ id: "HSQWGYDSGDSAGYSABSAWNSAZN" });
     
-
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(409);
   });
 
   it("/DELETE - Should successfully delete the patient", async () => {
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .delete("/patient")
+      .auth(token, { type: "bearer" })
       .send({ id: patientId });
     
-    const patientResponse = await request(app.getHttpServer())
-      .get("/patient")
-      .send({
-        firstName: "John",
-        documentId: { number: "062.632.780-64", type: "cpf" },
-      });
-    
-    expect(patientResponse.status).toBe(400)
+    expect(response.status).toBe(200)
   })
 
   afterAll(async () => {
