@@ -331,12 +331,6 @@ describe("PatientController (e2e)", () => {
   })
 
   afterAll(async () => {
-    await Promise.all([
-      closeConnection(),
-      redisClient.flushAll(),
-      redisClient.del("patients"),
-      redisClient.quit(),
-      app.close(),
-    ]);
+    await Promise.all([app.close(), closeConnection(), redisClient.quit()]);
   })
 })

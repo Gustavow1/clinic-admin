@@ -10,7 +10,6 @@ import { PrismaService } from "src/database/prisma.service";
 import { PrismaPatientRepository } from "src/repositories/prisma/prisma-patient-repository";
 import { LoggerMiddleware } from "src/middlewares/logger.middleware";
 import { RabbitMQModule } from "src/services/rabbitmq/rabbitmq.module";
-import { RabbitMQProvider } from "src/services/rabbitmq/rabbitmq.provider";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthMiddleware } from "src/middlewares/auth.middleware";
@@ -23,7 +22,7 @@ import { AuthMiddleware } from "src/middlewares/auth.middleware";
       throttlers: [
         {
           ttl: 60000,
-          limit: 50,
+          limit: 500,
         },
       ],
     }),
@@ -34,7 +33,6 @@ import { AuthMiddleware } from "src/middlewares/auth.middleware";
       provide: PatientRepository,
       useClass: PrismaPatientRepository,
     },
-    RabbitMQProvider,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

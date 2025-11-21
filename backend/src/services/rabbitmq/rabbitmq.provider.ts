@@ -17,9 +17,9 @@ export const RabbitMQProvider = {
 
 export const closeConnection = async () => {
   if (connection) {
-    channel.ackAll()
-    await channel.close()
-    await connection.close().then(() => console.log("RabbitMQ connection closed"))
+    setTimeout(async () => {
+      await connection.close()
+    }, 500);
   }
 }
 

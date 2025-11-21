@@ -21,4 +21,15 @@ export class LogService implements OnModuleInit {
       },
     );
   }
+
+  async onModuleDestroy() {
+    await this.rabbitMQService.consume(
+      rabbitMQConfig.queue,
+      async (message) => {
+        const log = JSON.parse(message.content.toString());
+
+        await this.logRepository.create(log);
+      },
+    );
+  }
 }
