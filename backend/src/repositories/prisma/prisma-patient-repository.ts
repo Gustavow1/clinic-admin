@@ -13,6 +13,7 @@ import { CreatePatientResponse } from "src/patients/dto/create-patient-response.
 import { DocumentIdAlreadyExistsError } from "src/patients/errors/documentId-already-exists";
 import { PatientNotFoundError } from "src/patients/errors/patient-not-found";
 import { PatientIdNotFoundError } from "src/patients/errors/patient-id-not-found";
+import { redisClient } from "src/services/redis/service";
 
 @Injectable()
 export class PrismaPatientRepository implements PatientRepository {
@@ -47,6 +48,7 @@ export class PrismaPatientRepository implements PatientRepository {
           },
         },
       });
+      await redisClient.del("patients")
       return right("Patient created")
     } catch (error) {
       if (error.code == "P2002") return left(new DocumentIdAlreadyExistsError(data.documentIds));
@@ -101,36 +103,42 @@ export class PrismaPatientRepository implements PatientRepository {
   }
 
   async getAll(): Promise<Patient[]> {
-    const patients = await this.prisma.patient.findMany({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        dateOfBirth: true,
-        email: true,
-        addresses: {
-          select: {
-            state: true,
-            city: true,
-            street: true,
-            zipCode: true,
+    const cachedPatients = await redisClient.get("patients");
+    if (cachedPatients) {
+      return JSON.parse(cachedPatients) as Patient[];
+    }
+    const patients =
+      await this.prisma.patient.findMany({
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          dateOfBirth: true,
+          email: true,
+          addresses: {
+            select: {
+              state: true,
+              city: true,
+              street: true,
+              zipCode: true,
+            },
+          },
+          documentIds: {
+            select: {
+              number: true,
+              type: true,
+            },
+          },
+          phoneNumbers: {
+            select: {
+              number: true,
+              type: true,
+            },
           },
         },
-        documentIds: {
-          select: {
-            number: true,
-            type: true,
-          },
-        },
-        phoneNumbers: {
-          select: {
-            number: true,
-            type: true,
-          },
-        },
-      },
-    });
-    return patients
+      });
+    await redisClient.set("patients", JSON.stringify(patients))
+    return patients;
   }
 
   async delete(id: string): Promise<DeletePatientResponse> {
@@ -164,6 +172,7 @@ export class PrismaPatientRepository implements PatientRepository {
           id
         }
       })
+      await redisClient.del("patients")
       return right("Patient successfully deleted")
     } catch (error) {
       if (error.code === "P2025") return left(new PatientIdNotFoundError(id));
@@ -213,6 +222,7 @@ export class PrismaPatientRepository implements PatientRepository {
           }
         })
       }
+      await redisClient.del("patients")
       return right("Patient updated")
     } catch (error) {
       if (error.code === "P2025") return left(new PatientNotFoundError(data.firstName));
