@@ -28,7 +28,7 @@ model Address {
   state     String
   street    String
   zipCode   String
-  patient   Patient @relation(fields: [patientId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId String
 
   @@map("addresses")
@@ -38,7 +38,7 @@ model DocumentId {
   id        String  @id @default(uuid())
   number    String  @unique
   type      String
-  patient   Patient @relation(fields: [patientId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId String
 
   @@map("documentIds")
@@ -48,7 +48,7 @@ model PhoneNumber {
   id        String  @id @default(uuid())
   number    String
   type      String
-  patient   Patient @relation(fields: [patientId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId String
 
   @@map("phoneNumbers")

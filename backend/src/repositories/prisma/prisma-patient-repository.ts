@@ -149,24 +149,6 @@ export class PrismaPatientRepository implements PatientRepository {
         id
       }})
 
-      await Promise.all([
-        this.prisma.documentId.deleteMany({
-          where: {
-            patientId: id,
-          },
-        }),
-        this.prisma.address.deleteMany({
-          where: {
-            patientId: id,
-          },
-        }),
-        this.prisma.phoneNumber.deleteMany({
-          where: {
-            patientId: id,
-          },
-        }),
-      ]);
-
       await this.prisma.patient.delete({
         where: {
           id
